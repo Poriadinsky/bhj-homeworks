@@ -4,19 +4,20 @@ let isInViewPort = function(element) {
     const viewPortHeight = window.innerHeight;
     const elementTop = element.getBoundingClientRect().top;
 
-    if (elementTop < 0 && elementTop > viewPortHeight) {
-        return false;
-    } else {
+    if (elementTop < viewPortHeight && elementTop > -element.offsetHeight && !element.classList.contains('reveal_active')) {
         return true;
+    } else {
+        return false;
     }
 }
 
-window.addEventListener('scroll', function () {
+function revealElements() {
     for (let i = 0; i < spam.length; i++) {
-        if ( isInViewPort(spam[i]) === true ) {
+        if (isInViewPort(spam[i])) {
             spam[i].classList.add('reveal_active');
-        } else {
-            spam[i].classList.remove('reveal_active');
         }
     }
-});
+}
+
+window.addEventListener('scroll', revealElements);
+revealElements();
