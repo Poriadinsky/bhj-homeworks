@@ -1,82 +1,61 @@
-class Autocomplete {
-  constructor(container) {
-    this.container = container;
-    this.input = container.querySelector('.autocomplete__input');
-    this.searchInput = container.querySelector('.autocomplete__search');
-    this.list = container.querySelector('.autocomplete__list');
-    this.valueContainer = container.querySelector('.autocomplete__value');
-    this.valueElement = container.querySelector('.autocomplete__text-content');
+const chatOpen = document.querySelector('.chat-widget');
+const messages = document.querySelector('.chat-widget__messages');
+const input = document.getElementById('chat-widget__input');
+const messagesBot = [
+  'Вы не купили ни одного товара с нашего сайта, чтобы так с нами разговаривать!',
+  'Мы не будем вам ничего продавать!',
+  'Добрый день! До свидания!',
+  'К сожалению, все операторы сейчас заняты. Не пишите нам больше!',
+  'Где ваша совесть?',
+  'Кто тут?'
+];
 
-    this.registerEvents();
-  }
+let realDate;
 
-  registerEvents() {
-    this.valueContainer.addEventListener('click', e => {
-      this.searchInput.classList.add('autocomplete__search_active');
-      this.list.classList.add('autocomplete__list_active');
-      this.searchInput.value = this.valueElement.textContent.trim();
-      this.searchInput.focus();
+chatOpen.addEventListener('click', function () {
+  chatOpen.classList.add('chat-widget_active');
+  realDate = new Date();
+});
 
-      this.onSearch();
-    });
-
-
-    this.searchInput.addEventListener('input', e => this.onSearch());
-
-    this.list.addEventListener('click', e => {
-      const { target } = e;
-      if (!target.matches('.autocomplete__item')) {
-        return;
-      }
-
-      const { textContent: text } = target,
-        { id: value, index } = target.dataset;
-
-      this.onSelect({
-        index,
-        text,
-        value
-      });
-    });
-  }
-
-  onSelect(item) {
-    this.input.selectedIndex = item.index;
-    this.valueElement.textContent = item.text;
-
-    this.searchInput.classList.remove('autocomplete__search_active');
-    this.list.classList.remove('autocomplete__list_active');
-  }
-
-  onSearch() {
-    const matches = this.getMatches(this.searchInput.value);
-
-    this.renderMatches(matches);
-  }
-
-  renderMatches(matches) {
-    const html = matches.map(item => `
-    	<li>
-        <span class="autocomplete__item"
-        	data-index="${item.index}"
-          data-id="${item.value}"
-        >${item.text}</span>
-      </li>
-    `);
-
-    this.list.innerHTML = html.join('');
-  }
-
-  getMatches(text) {
-    const options = Array.from(this.input.options);
-    const matches = options.filter(option => option.text.includes(text));
-
-    return matches.map(option => ({
-      text: option.textContent,
-      value: option.value,
-      index: option.index
-    }));
-  }
+function randomMessage(min = 0, max = messagesBot.length - 1) {
+  let random = min - 0.5 + Math.random() * (max - min + 1);
+  random = Math.round(random);
+  return random;
 }
 
-new Autocomplete(document.querySelector('.autocomplete'));
+function sendMessageBot() {
+  realDate = new Date();
+  messages.innerHTML += `
+    <div class="message">
+      <div class="message__time">${realDate.getHours()}:${('0' + realDate.getMinutes()).slice(-2)}</div>
+      <div class="message__text">${messagesBot[randomMessage()]}</div>
+    </div>
+  `;
+}
+
+let sendMessageClient = (e) => {
+  if (e.key === 'Enter') {
+    const message = input.value.trim();
+    if (message.length > 0 && !/^\s*$/.test(message)) { 
+      let realDate = new Date();
+      messages.innerHTML += `
+        <div class="message message_client">
+          <div class="message__time">${realDate.getHours()}:${('0' + realDate.getMinutes()).slice(-2)}</div>
+          <div class="message__text">
+            ${message}
+          </div>
+        </div>
+      `;
+      input.value = '';
+      sendMessageBot(false);
+      chat.parentElement.scrollTop = chat.parentElement.scrollHeight;
+      clearTimeout(timerId);
+      timerId = setTimeout(setTimer, 30000);
+    }
+  }
+};
+
+
+
+input.addEventListener('keydown', sendMessageClient);
+
